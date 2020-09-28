@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  airflow:
+    image: puckel/docker-airflow:latest
+    command: webserver
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+      - ./logs:/usr/local/airflow/logs
+    ports:
+      - "9090:8080"
