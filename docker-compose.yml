@@ -6,5 +6,6 @@ services:
     volumes:
       - ./dags:/usr/local/airflow/dags
       - ./logs:/usr/local/airflow/logs
+      - ./data:/usr/local/airflow/data
     ports:
       - "9090:8080"
