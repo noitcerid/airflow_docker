@@ -1,11 +1,38 @@
 version: "3.7"
 services:
-  airflow:
-    image: puckel/docker-airflow:latest
-    command: webserver
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+  scheduler:
+    image: apache/airflow
+    command: ["chmod -R 777 /opt/airflow/dags", "chmod -R 777 /opt/airflow/logs", "chmod -R 777 /opt/airflow/data", "chmod -R 777 /opt/airflow/scripts"]
+    entrypoint: ./scripts/entrypoint_scheduler.sh
+    restart: "on-failure"
+    depends_on:
+      - postgres
+    env_file:
+      - .env
     volumes:
-      - ./dags:/usr/local/airflow/dags
-      - ./logs:/usr/local/airflow/logs
-      - ./data:/usr/local/airflow/data
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+      - ./scripts:/opt/airflow/scripts
+  webserver:
+    image: apache/airflow
+    command: ["chmod -R 777 /opt/airflow/scripts", "chmod -R 777 /opt/airflow/logs", "chmod -R 777 /opt/airflow/data"]
+    entrypoint: ./scripts/entrypoint.sh
+    restart: "on-failure"
+    depends_on:
+      - postgres
+      - scheduler
+    env_file:
+      - .env
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./scripts:/opt/airflow/scripts
     ports:
-      - "9090:8080"
+    - "9090:8080"
